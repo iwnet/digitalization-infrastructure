@@ -1,0 +1,47 @@
+{
+		"tables":[
+				{
+				"name": "antennas",
+				"schema":{
+						"columnNames":["id","name","location"],
+						"columnTypes":[
+								{
+								"key":"id",
+								"value":"integer"
+						},{
+								"key":"name",
+								"value":"text"
+						},{
+								"key":"location",
+								"value":"text"
+						}],
+						"primaryKey":"id"
+				},
+				"data":[
+						{
+						"tuple":[
+								{
+								"key":"id",
+								"value":"1"
+						},{
+								"key":"name",
+								"value":"AG.265"
+						},{
+								"key":"location",
+								"value":"athens"
+						}]
+				},{
+						"tuple":[
+								{
+								"key":"id",
+								"value":"2"
+						},{
+								"key":"name",
+								"value":"AG.108"
+						},{
+								"key":"location",
+								"value":"thessaloniki"
+						}]
+				}]
+		}]
+}

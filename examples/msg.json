@@ -1,0 +1,15 @@
+{
+		"entries":[
+				{
+				"key":"antenna_id",
+				"value":"1"
+		},{
+				"key":"message_type",
+				"value":"temperature"
+		},{
+				"key":"payload",
+				"value":"some data"
+		}],
+		"nested":[]
+}
+

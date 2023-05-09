@@ -1,0 +1,12 @@
+{
+  "name" : "recipe",
+  "description" : "recipe",
+  "languageId" : 1,
+  "executablePath" : "",
+  "engineId" : 2,
+  "args" : {
+    "dimension_tables": ["antennas"],
+    "message_types": ["temperature"],
+    "other_args": []
+  }
+}

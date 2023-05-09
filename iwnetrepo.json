@@ -1,0 +1,7 @@
+{
+  "slug" : "iwnet",
+  "name" : "IWNET repository",
+  "description" : "IW-NET project data repository",
+  "dbname" : "iwnet_db",
+  "connectorId" : 0
+}

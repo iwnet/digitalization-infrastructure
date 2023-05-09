@@ -1,0 +1,9 @@
+{
+	"name":"temperature",
+	"description":"Temperature in the internal premises of a specific antenna",
+	"active": true,
+	"format":"{'message_type': 'temperature', 'slug': 'slug', 'antenna_id': 'integer', 'payload': {'temperature': 'jsonb'}}",
+	"externalConnectorId": null,
+	"datasource": ""
+}
+

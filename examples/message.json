@@ -1,0 +1,6 @@
+{
+    "message_type": "temperature",
+    "slug": "iwnet",
+    "antenna_id": 1,
+    "payload": "some data"
+}

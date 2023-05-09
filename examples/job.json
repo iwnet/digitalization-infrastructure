@@ -1,0 +1,10 @@
+{
+    "name":"temperature_forecast_job",
+    "description":"temperature_forecast_job",
+    "messageTypeId": 1,
+    "recipeId": 1,
+    "resultStorage": "pubsub",
+    "scheduleInfo": null,
+    "dependJobId" : null,
+    "active": true
+}

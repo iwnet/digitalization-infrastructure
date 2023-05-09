@@ -1,0 +1,103 @@
+#
+# Copyright 2022 ICCS
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+server.port=9999
+server.address=0.0.0.0
+server.servlet.context-path=/api
+
+# SSL Security
+server.ssl.enabled=false
+server.ssl.key-store=/resources/cert.p12
+server.ssl.key-store-password=123456
+server.ssl.key-store-type=PKCS12
+
+# Storage backend: bda config db.
+backend.db.bda.username = iwnet
+backend.db.bda.password = 123456
+backend.db.bda.url      = jdbc:postgresql://bda-postgres:5432/bda_db
+
+# Storage backend: dimension tables db.
+backend.db.dimension.username            = iwnet
+backend.db.dimension.password            = 123456
+backend.db.dimension.privileged_username = iwnet_admin
+backend.db.dimension.privileged_password = 123456
+backend.db.dimension.url                 = jdbc:postgresql://bda-postgres:5432/
+
+# Storage backend: event log db.
+backend.db.event.username = iwnet
+backend.db.event.password = 123456
+backend.db.event.url      = hbase://bda-hbase-master:2181/
+backend.db.event.master.host = bda-hbase-master
+backend.db.event.quorum      = bda-zookeeper-master
+
+# HDFS configuration.
+backend.hdfs.master.url = hdfs://bda-hadoop-namenode:8020
+
+# Storage backend: KPI db.
+kpi.db.username = iwnet
+kpi.db.password = 123456
+kpi.db.url      = jdbc:postgresql://bda-postgres:5432/
+
+# Kafka consumer and producer configuration parameters.
+kafka.broker.url = bda-kafka:9092
+kafka.ssl.enabled = false
+oauth.server.base.uri = http://bda-keycloak:8080/auth/realms/test_realm/protocol/openid-connect
+oauth.server.client.id     = bda_kafka_client
+oauth.server.client.secret = 32b72cd3-2c8d-417f-8ba8-746ef6386c61
+oauth.server.scopes        = test
+oauth.server.token.endpoint.path = /token
+oauth.server.introspection.endpoint.path = /token/introspect
+oauth.server.grant.type = client_credentials
+oauth.server.accept.unsecure.server = true
+
+kafka.consumer.topic.numPartitions = 1
+kafka.consumer.topic.replicationFactor = 1
+kafka.consumer.group.id = bda
+kafka.consumer.ssl.truststoreLocation = /ssl/kafka.truststore.jks
+kafka.consumer.ssl.truststorePassword = pass
+kafka.consumer.ssl.keystoreLocation = /ssl/kafka.keystore.jks
+kafka.consumer.ssl.keystorePassword = pass
+kafka.consumer.ssl.keyPassword = pass
+kafka.producer.ssl.caLocation = /ssl/CARoot.pem
+kafka.producer.ssl.certificateLocation = /ssl/certificate.pem
+kafka.producer.ssl.keyLocation = /ssl/key.pem
+
+
+# keycloak configuration parameters.
+keycloak.enabled                    = true
+keycloak.auth-server-url            = http://<VM-IP-address>:8080/auth/
+keycloak.realm                      = test_realm
+keycloak.resource                   = bda_client
+keycloak.credentials.secret         = bda_secret
+server.keycloak.admin.username      = <admin_username>
+server.keycloak.admin.password      = <admin_pass>
+keycloak.use-resource-role-mappings = true
+keycloak.bearer-only                = true
+keycloak.cors                       = true
+keycloak.policy-enforcer-config.enforcement-mode = ENFORCING
+keycloak.policy-enforcer-config.lazy-load-paths  = true
+
+# Spark configuration
+spark.livy.url             = http://bda-livy:8998
+spark.master               = yarn
+spark.deploy_mode          = cluster
+spark.conf.driver_memory   = 512m
+spark.conf.executor_cores  = 1
+spark.conf.executor_memory = 1g
+spark.conf.jars            = https://jdbc.postgresql.org/download/postgresql-42.2.1.jar,https://repo.hortonworks.com/repository/releases/com/hortonworks/shc-core/1.1.1-2.1-s_2.11/shc-core-1.1.1-2.1-s_2.11.jar
+
+# Execution Engines configuration.
+engines.recipe.storage.type = hdfs
+engines.recipe.storage.prefix = /uploads

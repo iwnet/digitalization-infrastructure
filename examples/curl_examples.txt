@@ -1,0 +1,88 @@
+### Change to keycloak listening ip
+IP_ADDRESS=""
+
+### Change to keycloak listening port (8080/8443 for ssl)
+KEYCLOAK_LISTEN_PORT="8080"
+
+### If ssl connection change to "s" else leave empty
+SSL=""
+
+###########################################################################################
+########################## DO NOT CHANGE ANYTHING IN THIS BLOCK ###########################
+###########################################################################################
+
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=iwnet_admin
+CLIENT_ID=bda_client
+CLIENT_SECRET=bda_secret
+REALM="test_realm"
+SLUG="iwnet"
+
+KEYCLOAK_PREFIX="http${SSL}://${IP_ADDRESS}:${KEYCLOAK_LISTEN_PORT}/auth"
+BDA_SERVER_PREFIX="http${SSL}://${IP_ADDRESS}:9999/api"
+
+###########################################################################################
+###################################### END OF BLOCK #######################################
+###########################################################################################
+
+echo $BDA_SERVER_PREFIX
+
+results=$(curl -d "client_id=${CLIENT_ID}" -d "client_secret=${CLIENT_SECRET}" -d "username=${ADMIN_USERNAME}" -d "password=${ADMIN_PASSWORD}"  -d 'grant_type=password' -s "${KEYCLOAK_PREFIX}/realms/test_realm/protocol/openid-connect/token" && echo)
+token=$(python3 -c "import sys, json; print(json.loads(json.dumps($results))['access_token'])")
+echo $token
+
+// 1. Bootstrap dimension tables
+curl -ik -X POST -H "Content-type:application/json" -H "Accept:application/json" -H "Authorization: bearer $token" --data @master_data.json $BDA_SERVER_PREFIX/datastore/$SLUG/boot && echo
+
+// 2. Create message type to subscribe to (returns message_id)
+curl -ik -X POST -H "Content-type:application/json" -H "Accept:application/json" -H "Authorization: bearer $token" --data @msgtype.json $BDA_SERVER_PREFIX/messages/$SLUG && echo
+
+// 3. Add new recipe (returns recipe_id)
+curl -ik -X POST -H "Content-type:application/json" -H "Authorization: bearer $token" -d @recipe.json $BDA_SERVER_PREFIX/recipes/$SLUG/ && echo
+
+// 4. Upload recipe executable (use recipe_id from previous call)
+curl -ik -X PUT -H "Content-type:application/octet-stream" -H "Authorization: bearer $token" --data-binary @recipe.py $BDA_SERVER_PREFIX/recipes/$SLUG/<recipe_id>/recipe.py
+
+// 5. Create a new job (message-triggered or cron) (returns job_id)
+curl -ik -X POST -H "Content-type:application/json" -H "Accept:application/json" -H "Authorization: bearer $token" --data @job.json $BDA_SERVER_PREFIX/jobs/$SLUG && echo
+
+// Extras
+// Store message in eventlog
+curl -ik -X POST -H "Content-type:application/json" -H "Accept:application/json" -H "Authorization: bearer $token" --data @msg.json $BDA_SERVER_PREFIX/datastore/$SLUG/ && echo
+
+// Get data from eventlog
+curl -ik -X GET -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/datastore/$SLUG/entries?type=rows&n=-1" && echo
+curl -ik -X GET -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/datastore/$SLUG/select?filters=antenna_id:1;message_type:temperature" && echo
+
+// Get data from dimension tables
+curl -ik -X GET -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/datastore/$SLUG/dtable?tableName=antennas&filters=id:1" && echo
+
+// Print dimension tables schema
+curl -ik -X GET -H "Authorization: bearer $token" $BDA_SERVER_PREFIX/datastore/$SLUG/schema && echo
+
+// Print the result of a specific job running a specific recipe which is saved in the KPIdb
+curl -ik -X GET -H "Accept:application/json" -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/kpi/$SLUG/<recipename_jobid>/select?filters=true:true" && echo
+
+// Get shared recipes
+curl -ik -X GET -H "Accept:application/json" -H "Authorization: bearer $token" $BDA_SERVER_PREFIX/sharedrecipes
+
+// Create a recipe from an existing shared recipe
+curl -ik -X POST -H "Content-type:application/json" -H "Accept:application/json" -H "Authorization: bearer $token" --data @recipe_args.json $BDA_SERVER_PREFIX/recipes/$SLUG/<shared_recipe_id>?name=myrecipe && echo
+
+// Get available execution languages
+curl -ik -X GET -H "Accept:application/json" -H "Authorization: bearer $token" $BDA_SERVER_PREFIX/xlanguages
+
+// Get available execution engines
+curl -ik -X GET -H "Accept:application/json" -H "Authorization: bearer $token" $BDA_SERVER_PREFIX/xengines
+
+// Get Jobs
+curl -ik -X GET -H "Accept:application/json" -H "Authorization: bearer $token" $BDA_SERVER_PREFIX/jobs/$SLUG/
+
+// Get MessageTypes
+curl -ik -X GET -H "Accept:application/json" -H "Authorization: bearer $token" $BDA_SERVER_PREFIX/messages/$SLUG/
+
+// Get Recipes
+curl -ik -X GET -H "Accept:application/json" -H "Authorization: bearer $token" $BDA_SERVER_PREFIX/recipes/$SLUG/
+
+// Test job triggering through pub-sub message
+curl -ik -X POST -H "Content-type:application/json" -H "Accept:application/json" -H "Authorization: bearer $token" --data @message.json $BDA_SERVER_PREFIX/messages/$SLUG/insert && echo

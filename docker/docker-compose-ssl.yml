@@ -1,0 +1,155 @@
+version: "3.7"
+
+services:
+  hadoop-namenode:
+    image: iwnet/hadoop-namenode-${HADOOP_VERSION}:latest
+    container_name: bda-hadoop-namenode
+    networks:
+      - bda-network
+    volumes:
+      - bda-hadoop-namenode-volume:/var/local/hadoop/hdfs/namenode
+  hadoop-datanode:
+    image: iwnet/hadoop-datanode-${HADOOP_VERSION}:latest
+    container_name: bda-hadoop-datanode
+    depends_on:
+      - hadoop-namenode
+    networks:
+      - bda-network
+    volumes:
+      - bda-hadoop-datanode-volume:/var/local/hadoop/hdfs/datanode
+  hadoop-resourcemanager:
+    image: iwnet/hadoop-yarn-resourcemanager-${HADOOP_VERSION}:latest
+    container_name: bda-hadoop-yarn-resourcemanager
+    depends_on:
+      - hadoop-namenode
+    networks:
+      - bda-network
+  spark:
+    image: iwnet/spark-${SPARK_VERSION}:latest
+    container_name: bda-spark
+    depends_on:
+      - hadoop-namenode
+    networks:
+      - bda-network
+  zookeeper-master:
+    image: iwnet/zookeeper-${ZOOKEEPER_VERSION}:latest
+    container_name: bda-zookeeper-master
+    networks:
+      - bda-network
+    volumes:
+      - bda-zookeeper-volume:/data/zookeeper
+    expose:
+      - "2181"
+  hbase-master:
+    image: iwnet/hbase-master-${HBASE_VERSION}:latest
+    container_name: bda-hbase-master
+    depends_on:
+      - hadoop-namenode
+      - zookeeper-master
+    networks:
+      - bda-network
+  hbase-regionserver:
+    image: iwnet/hbase-regionserver-${HBASE_VERSION}:latest
+    container_name: bda-hbase-regionserver
+    depends_on:
+      - hadoop-namenode
+      - zookeeper-master
+    networks:
+      - bda-network
+  livy:
+    image: iwnet/livy-${LIVY_VERSION}:latest
+    container_name: bda-livy
+    depends_on:
+      - hadoop-resourcemanager
+      - zookeeper-master
+      - spark
+    networks:
+      - bda-network
+  postgres:
+    image: iwnet/postgres-11
+    container_name: bda-postgres
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+    volumes:
+      - bda-postgres-volume:/var/lib/postgresql/data
+    networks:
+      - bda-network
+  keycloak:
+    image: iwnet/keycloak:latest
+    container_name: bda-keycloak
+    ports: 
+      #- 0.0.0.0:8080:8080
+      - 0.0.0.0:8443:8443
+    environment: 
+      KEYCLOAK_USER: ${KEYCLOAK_USER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASS}
+      KEYCLOAK_IMPORT: /tmp/test-realm.json
+      LANG: en_US.UTF-8
+    depends_on:
+      - postgres
+    volumes:
+      - type: bind
+        source: ${KEYCLOAK_SSL_FILES}
+        target: /etc/x509/https
+        read_only: true
+    networks:
+      - bda-network
+  kafka:
+    image: iwnet/kafka-${KAFKA_VERSION}:latest
+    container_name: bda-kafka
+    depends_on:
+      - zookeeper-master
+      - keycloak
+    networks:
+      - bda-network
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    expose:
+      - "9092"
+      - "9093"
+    environment:
+      KAFKA_OPTS: "-Djava.security.auth.login.config=/oauth/config/kafka_server_jaas.conf"
+      KAFKA_ADVERTISED_LISTENERS: SASL_PLAINTEXT://bda-kafka:9092,SASL_SSL://bda-kafka:9093
+      KAFKA_LISTENERS: SASL_PLAINTEXT://bda-kafka:9092,SASL_SSL://bda-kafka:9093
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper-master:2181
+      KAFKA_SSL_CLIENT_AUTH: 'required'
+      KAFKA_SSL_KEYSTORE_LOCATION: '/opt/kafka/ssl/kafka.keystore.jks'
+      KAFKA_SSL_KEYSTORE_PASSWORD: ''
+      KAFKA_SSL_KEY_PASSWORD: ''
+      KAFKA_SSL_TRUSTSTORE_LOCATION: '/opt/kafka/ssl/kafka.truststore.jks'
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: ''
+  bda:
+    image: iwnet/bda:latest
+    container_name: bda-controller
+    ports:
+      - 0.0.0.0:9999:9999
+    depends_on:
+      - postgres
+      - hadoop-namenode
+      - spark
+      - hbase-master
+      - livy
+      - kafka
+    environment:
+      KAFKA_OAUTH_SERVER_PROP_FILE: /code/conf/bda.properties
+    volumes:
+      - type: bind
+        source: ${BDA_CODE_FOLDER}
+        target: /code
+      - type: bind
+        source: ${BDA_CERT}
+        target: /resources/cert.p12
+    networks:
+      - bda-network
+
+volumes:
+  bda-postgres-volume:
+  bda-hadoop-namenode-volume:
+  bda-hadoop-datanode-volume:
+  bda-zookeeper-volume:
+
+networks:
+  bda-network:
+    driver: bridge
+    external: false

@@ -72,19 +72,23 @@ Local deployment with Kubernetes
 minikube start --mount --mount-string="PATH_TO_SOURCE_CODE:/home/ubuntu/shared-bigdata-infra" \
 --memory 4096 --kubernetes-version=v1.23.12 
 ```
-- Navigate to the folder big-data-platform and start the pods with the command: 
+- Navigate to the folder big-data-platform and start the pods with: 
 ```./start_iwnet_with_helm_minikube.sh```
-- From two separate terminals execute the following (blocking) commands:
+
+- From two separate terminals execute the following commands:
 ```
+# terminal 1
 BDA_CONTROLLER_POD=$(kubectl get all -n iwnet -o wide | grep 'pod/bda-controller' | awk '{print $1}')
 kubectl port-forward $BDA_CONTROLLER_POD 9999:9999 --address='0.0.0.0' -n iwnet
-```
-``` 
+# terminal 2
 BDA_KEYCLOAK_POD=$(kubectl get all -n iwnet -o wide | grep 'pod/bda-keycloak' | awk '{print $1}')
 kubectl port-forward $BDA_KEYCLOAK_POD 8080:8080 --address='0.0.0.0' -n iwnet
 ```
 - Execute steps 1-5 from the 'Start the BDA server' section after replacing the first command 
-of step 1 with the following: ```kubectl exec -it $BDA_CONTROLLER_POD -n iwnet -- bash```
+of step 1 with the following: 
+```
+kubectl exec -it $BDA_CONTROLLER_POD -n iwnet -- bash
+```
 
 Contact
 -------

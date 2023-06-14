@@ -1,0 +1,25 @@
+pod:
+  image: iwnet/bda-network-observer
+  tag: latest
+  pullPolicy: Never
+
+name: bda-network-observer
+
+serviceAccount:
+  name: network-observer
+
+role:
+  name: exec-pods-to-sa
+  ref: exec-pods
+
+resources: #{}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  requests:
+    memory: "128Mi"
+    cpu: "300m"
+  #limits:
+  #  memory: 1024Mi
+  #  cpu: 1

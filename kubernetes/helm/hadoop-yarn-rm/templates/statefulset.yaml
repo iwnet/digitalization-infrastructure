@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.name }}
+  annotations: 
+    meta.helm.sh/release-name: {{ .Values.name }}
+    meta.helm.sh/release-namespace: iwnet
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  serviceName: {{ .Values.name }}
+  replicas: {{ .Values.statefulset.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - name: {{ .Values.name }}
+        image: {{ .Values.statefulset.image }}-{{ .Values.version }}:{{ .Values.statefulset.tag }}
+        imagePullPolicy: {{ .Values.statefulset.pullPolicy }}
+        {{- if .Values.resources }}
+        resources:
+          {{- if .Values.resources.requests }}
+          requests:
+            memory: {{ .Values.resources.requests.memory | default "128Mi" | quote }}
+            cpu: {{ .Values.resources.requests.cpu | default "500m" | quote }}
+          {{- else}}
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          {{- end}}
+          {{- if .Values.resources.limits }}
+          limits:
+            memory: {{ .Values.resources.limits.memory | default "1024Mi" | quote }}
+            cpu: {{ .Values.resources.limits.cpu | default "1" | quote }}
+          {{- else}}  
+          #limits:
+          #  memory: "1024Mi"
+          #  cpu: "1"
+          {{- end }}
+        {{- else }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          #limits:
+          #  memory: "1024Mi"
+          #  cpu: "1"
+        {{- end}} 
+        ports:
+        - containerPort: {{ .Values.ports.rm_address0 }}
+          name: rm-address0
+        - containerPort: {{ .Values.ports.rm_address1 }}
+          name: rm-address1
+        - containerPort: {{ .Values.ports.rm_address2 }}
+          name: rm-address2
+        - containerPort: {{ .Values.ports.rm_address3 }}
+          name: rm-address3
+        - containerPort: {{ .Values.ports.rm_web }}
+          name: rm-web
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: {{ .Values.name }}
+              topologyKey: kubernetes.io/hostname

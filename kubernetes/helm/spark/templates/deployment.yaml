@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - name: {{ .Values.name }}
+        image: {{ .Values.deployment.image }}-{{ .Values.version }}:{{ .Values.deployment.tag }}
+        imagePullPolicy: {{ .Values.deployment.pullPolicy }}
+        {{- if .Values.resources }}
+        resources:
+          {{- if .Values.resources.requests }}
+          requests:
+            memory: {{ .Values.resources.requests.memory | default "128Mi" | quote }}
+            cpu: {{ .Values.resources.requests.cpu | default "500m" | quote }}
+          {{- else}}
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          {{- end}}
+          {{- if .Values.resources.limits }}
+          limits:
+            memory: {{ .Values.resources.limits.memory | default "1024Mi" | quote }}
+            cpu: {{ .Values.resources.limits.cpu | default "1" | quote }}
+          {{- else}}  
+          #limits:
+          #  memory: "1024Mi"
+          #  cpu: "1"
+          {{- end }}
+        {{- else }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          #limits:
+          #  memory: "1024Mi"
+          #  cpu: "1"
+        {{- end}} 
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: {{ .Values.name }}
+              topologyKey: kubernetes.io/hostname

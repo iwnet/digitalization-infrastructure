@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  selector:
+    app: {{ .Values.name }}
+  ports:
+    - name: postgres-port
+      port: {{ .Values.ports.postgresPort }}
+      targetPort: {{ .Values.ports.postgresPort }}
+  {{- if .Values.service.type }}
+    {{- if eq .Values.service.type "None"}}
+  clusterIP: None
+    {{- else}} 
+  type: {{ .Values.service.type | default "ClusterIP" }}
+    {{- end}}
+  {{- else}}  
+  type: ClusterIP
+  {{- end}}

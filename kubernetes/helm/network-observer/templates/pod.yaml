@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  serviceAccountName: {{ .Values.serviceAccount.name }}
+  containers:
+  - name: {{ .Values.name }}
+    image: {{ .Values.pod.image }}:{{ .Values.pod.tag }}
+    imagePullPolicy: {{ .Values.pod.pullPolicy }}
+    command: ['sh', '-c', "./network-observer.sh"]
+    {{- if .Values.resources }}
+    resources:
+        {{- if .Values.resources.requests }}
+        requests:
+          memory: {{ .Values.resources.requests.memory | default "128Mi" | quote }}
+          cpu: {{ .Values.resources.requests.cpu | default "500m" | quote }}
+        {{- else}}
+        requests:
+          memory: "128Mi"
+          cpu: "300m"
+        {{- end}}
+        {{- if .Values.resources.limits }}
+        limits:
+          memory: {{ .Values.resources.limits.memory | default "1024Mi" | quote }}
+          cpu: {{ .Values.resources.limits.cpu | default "1" | quote }}
+        {{- else}}  
+        #limits:
+        #  memory: "1024Mi"
+        #  cpu: "1"
+        {{- end }}
+    {{- else }}
+    resources:
+        requests:
+          memory: "128Mi"
+          cpu: "300m"
+        #limits:
+        #  memory: "1024Mi"
+        #  cpu: "1"
+    {{- end}} 

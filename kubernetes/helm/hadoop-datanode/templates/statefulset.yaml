@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.name }}
+  annotations: 
+    meta.helm.sh/release-name: {{ .Values.name }}
+    meta.helm.sh/release-namespace: iwnet
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  serviceName: {{ .Values.name }}
+  replicas: {{ .Values.statefulset.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      # initContainers:
+      # - name: {{ .Values.initContainer.name }}
+      #   image: alpine:3.12
+      #   command: ['sh', '-c', "apk --update add curl; set -x; while [[ \"$(curl -s -o /dev/null -w \"%{http_code}\" {{ .Values.initContainer.hdfsNamenodeName }}:50070)\" != \"200\" ]]; do echo \".\"; sleep 10; done"]
+      containers:
+      - name: {{ .Values.name }}
+        image: {{ .Values.statefulset.image }}-{{ .Values.version }}:{{ .Values.statefulset.tag }}
+        imagePullPolicy: {{ .Values.statefulset.pullPolicy }}
+        {{- if .Values.resources }}
+        resources:
+          {{- if .Values.resources.requests }}
+          requests:
+            memory: {{ .Values.resources.requests.memory | default "128Mi" | quote }}
+            cpu: {{ .Values.resources.requests.cpu | default "500m" | quote }}
+          {{- else}}
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          {{- end}}
+          {{- if .Values.resources.limits }}
+          limits:
+            memory: {{ .Values.resources.limits.memory | default "1024Mi" | quote }}
+            cpu: {{ .Values.resources.limits.cpu | default "1" | quote }}
+          {{- else}}  
+          #limits:
+          #  memory: "1024Mi"
+          #  cpu: "1"
+          {{- end }}
+        {{- else }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          #limits:
+          #  memory: "1024Mi"
+          #  cpu: "1"
+        {{- end}} 
+        volumeMounts:
+        - name: {{ .Values.pv.name }}
+          mountPath: {{ .Values.pv.path }}
+      volumes:
+      - name: {{ .Values.pv.name }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: {{ .Values.name }}
+              topologyKey: kubernetes.io/hostname
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.pv.name }}
+    spec:
+      accessModes: [ {{ quote .Values.pv.accessModes }} ]
+      storageClassName: {{ quote .Values.pv.className }}
+      resources:
+        requests:
+          storage: {{ .Values.pv.storage }}

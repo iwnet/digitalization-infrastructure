@@ -1,0 +1,46 @@
+version: 2.9.1
+
+statefulset:
+  replicaCount: 1
+  image: iwnet/hadoop-namenode
+  tag: latest
+  pullPolicy: Never
+
+service: #{}
+  type: None #ClusterIP #
+
+name: bda-hadoop-namenode
+
+initContainer:
+  name: delete-lost-found
+
+pv:
+  storage: 10Gi
+  name: data
+  path: /var/local/hadoop/hdfs/namenode
+  accessModes: ReadWriteOnce
+  className: "standard"
+
+pvHA:
+  storage: 2Gi
+  name: data-ha
+  path: /hadoop-ha/bda-hadoop-namenode
+  accessModes: ReadWriteOnce
+  className: "standard"
+
+resources: #{}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  requests:
+    memory: "128Mi"
+    cpu: "300m"
+  #limits:
+  #  memory: 1024Mi
+  #  cpu: 1
+
+ports:
+  fs: 9000
+  fs2: 8020
+  web: 50070

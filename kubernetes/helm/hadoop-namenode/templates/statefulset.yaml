@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Values.name }}
+  annotations: 
+    meta.helm.sh/release-name: {{ .Values.name }}
+    meta.helm.sh/release-namespace: iwnet
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  serviceName: {{ .Values.name }}
+  replicas: {{ .Values.statefulset.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      initContainers:
+      - name: {{ .Values.initContainer.name }}
+        image: busybox
+        command: ["sh", "-c", "rm -rf {{ .Values.pv.path }}/lost+found"]
+        volumeMounts:
+        - name: {{ .Values.pv.name }}
+          mountPath: {{ .Values.pv.path }}
+        {{- if gt (.Values.statefulset.replicaCount | int) 1}}
+        - name: {{ .Values.pvHA.name }}
+          mountPath: {{ .Values.pvHA.path }}
+        {{- end}} 
+      containers:
+      - name: {{ .Values.name }}
+        image: {{ .Values.statefulset.image }}-{{ .Values.version }}:{{ .Values.statefulset.tag }}
+        imagePullPolicy: {{ .Values.statefulset.pullPolicy }}
+        {{- if .Values.resources }}
+        resources:
+          {{- if .Values.resources.requests }}
+          requests:
+            memory: {{ .Values.resources.requests.memory | default "128Mi" | quote }}
+            cpu: {{ .Values.resources.requests.cpu | default "500m" | quote }}
+          {{- else}}
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          {{- end}}
+          {{- if .Values.resources.limits }}
+          limits:
+            memory: {{ .Values.resources.limits.memory | default "1024Mi" | quote }}
+            cpu: {{ .Values.resources.limits.cpu | default "1" | quote }}
+          {{- else}}  
+          #limits:
+          #  memory: "1024Mi"
+          #  cpu: "1"
+          {{- end }}
+        {{- else }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "300m"
+          #limits:
+          #  memory: "1024Mi"
+          #  cpu: "1"
+        {{- end}} 
+        ports:
+        - containerPort: {{ .Values.ports.fs }}
+          name: fs
+        - containerPort: {{ .Values.ports.fs2 }}
+          name: fs2
+        - containerPort: {{ .Values.ports.web }}
+          name: web
+        volumeMounts:
+        - name: {{ .Values.pv.name }}
+          mountPath: {{ .Values.pv.path }}
+      volumes:
+      - name: {{ .Values.pv.name }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: {{ .Values.name }}
+              topologyKey: kubernetes.io/hostname
+  volumeClaimTemplates:
+  - metadata:
+      name: {{ .Values.pv.name }}
+    spec:
+      accessModes: [ {{ quote .Values.pv.accessModes }} ]
+      storageClassName: {{ quote .Values.pv.className }}
+      resources:
+        requests:
+          storage: {{ .Values.pv.storage }}
+  {{- if gt (.Values.statefulset.replicaCount | int) 1}}
+  - metadata:
+      name: {{ .Values.pvHA.name }}
+    spec:
+      accessModes: [ {{ quote .Values.pvHA.accessModes }} ]
+      storageClassName: {{ quote .Values.pvHA.className }}
+      resources:
+        requests:
+          storage: {{ .Values.pvHA.storage }}
+  {{- end}} 

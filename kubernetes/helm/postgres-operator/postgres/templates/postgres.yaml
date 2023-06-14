@@ -1,0 +1,114 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: {{ default .Release.Name .Values.name }}
+spec:
+  postgresVersion: {{ default 13 .Values.postgresVersion }}
+  {{- if .Values.postGISVersion }}
+  postGISVersion: {{ quote .Values.postGISVersion }}
+  {{- end }}
+  {{- if .Values.imagePostgres }}
+  image: {{ .Values.imagePostgres | quote }}
+  {{- end }}
+  {{- if .Values.port }}
+  port: {{ .Values.port }}
+  {{- end }}
+  {{- if .Values.instances }}
+  instances:
+{{ toYaml .Values.instances | indent 4 }}
+  {{- else }}
+  instances:
+    - name: {{ default "instance1" .Values.instanceName | quote }}
+      replicas: {{ default 1 .Values.instanceReplicas }}
+      dataVolumeClaimSpec:
+        accessModes:
+        - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: {{ default "1Gi" .Values.instanceSize | quote }}
+      {{- if or .Values.instanceMemory .Values.instanceCPU }}
+      resources:
+        limits:
+          cpu: {{ default "" .Values.instanceCPU | quote }}
+          memory: {{ default "" .Values.instanceMemory | quote }}
+      {{- end }}
+  {{- end }}
+  backups:
+    pgbackrest:
+      {{- if .Values.imagePgBackRest }}
+      image: {{ .Values.imagePgBackRest | quote }}
+      {{- end }}
+      repos:
+      - name: repo1
+        volume:
+          volumeClaimSpec:
+            accessModes:
+            - "ReadWriteOnce"
+            storageClassName: "standard"
+            resources:
+              requests:
+                storage: {{ default "1Gi" .Values.backupsSize | quote }}
+  {{- if or .Values.pgBouncerReplicas .Values.pgBouncerConfig }}
+  proxy:
+    pgBouncer:
+      {{- if .Values.imagePgBouncer }}
+      image: {{ .Values.imagePgBouncer | quote }}
+      {{- end }}
+      {{- if .Values.pgBouncerConfig }}
+{{ toYaml .Values.pgBouncerConfig | indent 6 }}
+      {{- else }}
+      replicas: {{ .Values.pgBouncerReplicas }}
+      {{- end }}
+  {{- end }}
+  {{- if .Values.patroni }}
+  patroni:
+{{ toYaml .Values.patroni | indent 4 }}
+  {{- end }}
+  {{- if .Values.users }}
+  users:
+{{ toYaml .Values.users | indent 4 }}
+  {{- end }}
+  {{- if .Values.service }}
+  service:
+{{ toYaml .Values.service | indent 4 }}
+  {{- end }}
+  {{- if .Values.dataSource }}
+  service:
+{{ toYaml .Values.dataSource | indent 4 }}
+  {{- end }}
+  {{- if .Values.databaseInitSQL }}
+  databaseInitSQL:
+    name: {{ required "A ConfigMap name is required for running bootstrap SQL." .Values.databaseInitSQL.name | quote }}
+    key: {{  required "A key in a ConfigMap containing any bootstrap SQL is required." .Values.databaseInitSQL.key | quote }}
+  {{- end }}
+  {{- if .Values.imagePullPolicy }}
+  imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+  {{- end }}
+  {{- if .Values.imagePullSecrets }}
+  imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 4 }}
+  {{- end }}
+  {{- if .Values.disableDefaultPodScheduling }}
+  disableDefaultPodScheduling: true
+  {{- end }}
+  {{- if .Values.metadata }}
+  metadata:
+{{ toYaml .Values.metadata | indent 4 }}
+  {{- end }}
+  {{- if .Values.monitoring }}
+  monitoring:
+    pgmonitor:
+      exporter:
+        image: {{ default "" .Values.imageExporter | quote }}
+        {{- if .Values.monitoringConfig }}
+{{ toYaml .Values.monitoringConfig | indent 8 }}
+        {{- end }}
+  {{- end }}
+  {{- if .Values.shutdown }}
+  shutdown: true
+  {{- end }}
+  {{- if .Values.standby }}
+  standby:
+    enabled: {{ .Values.standby.enabled }}
+    repoName: {{ required "repoName must be set when enabling standby mode." .Values.standby.repoName }}
+  {{- end }}

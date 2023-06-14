@@ -1,0 +1,18 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  selector:
+    app: {{ .Values.name }}
+  {{- if .Values.service.type }}
+    {{- if eq .Values.service.type "None"}}
+  clusterIP: None
+    {{- else}} 
+  type: {{ .Values.service.type | default "ClusterIP" }}
+    {{- end}}
+  {{- else}}  
+  type: ClusterIP
+  {{- end}}

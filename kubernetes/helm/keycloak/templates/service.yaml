@@ -1,0 +1,24 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    app: {{ .Values.name }}
+spec:
+  selector:
+    app: {{ .Values.name }}
+  {{- if .Values.service.type }}
+    {{- if eq .Values.service.type "None"}}
+  clusterIP: None
+    {{- else}} 
+  type: {{ .Values.service.type | default "ClusterIP" }}
+    {{- end}}
+  {{- else}}  
+  type: ClusterIP
+  {{- end}}
+  ports:
+    - protocol: TCP
+      name: keycloak-port
+      port: {{ .Values.ports.keycloakPort }}
+      targetPort: {{ .Values.ports.bdaPort }}
+      nodePort: {{ .Values.ports.nodePort }} # Port to allocate on host. The range of valid ports is 30000-32767.

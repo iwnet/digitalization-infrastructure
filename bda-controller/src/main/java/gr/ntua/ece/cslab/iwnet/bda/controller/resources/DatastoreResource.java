@@ -20,7 +20,6 @@ import gr.ntua.ece.cslab.iwnet.bda.analyticsml.RunnerInstance;
 import gr.ntua.ece.cslab.iwnet.bda.common.Configuration;
 import gr.ntua.ece.cslab.iwnet.bda.common.storage.SystemConnector;
 import gr.ntua.ece.cslab.iwnet.bda.common.storage.SystemConnectorException;
-import gr.ntua.ece.cslab.iwnet.bda.common.storage.beans.Connector;
 import gr.ntua.ece.cslab.iwnet.bda.common.storage.beans.ExecutionEngine;
 import gr.ntua.ece.cslab.iwnet.bda.common.storage.beans.ExecutionLanguage;
 import gr.ntua.ece.cslab.iwnet.bda.common.storage.beans.DbInfo;
@@ -242,22 +241,7 @@ public class DatastoreResource {
         String details = "";
 
         try {
-            //List<Connector> connectors = Connector.getConnectors();
-
-            //boolean correctConnector = false;
-            //for (Connector connector : connectors) {
-            //    if (connector.getId() == info.getConnectorId()) {
-            //        correctConnector = true;
-            //    }
-            //}
-
-            //if (correctConnector) {
             info.save();
-            //} else {
-            //    LOGGER.log(Level.WARNING, "Bad connector id provided!");
-            //    new ResponseEntity<>("Connector id does not exist.", HttpStatus.BAD_REQUEST);
-            //}
-
             details = Integer.toString(info.getId());
         } catch (Exception e) {
             e.printStackTrace();
@@ -327,12 +311,10 @@ public class DatastoreResource {
     public ResponseEntity<?> destroyRepository(@PathVariable("repoId") Integer repoId) {
 
         DbInfo info = null;
-        Boolean externalConnectors = null;
 
 	// TODO: unschedule jobs and destroy live sessions
         try {
             info = DbInfo.getDbInfoById(repoId);
-            externalConnectors = MessageType.checkExternalMessageTypesExist(info.getSlug());
             StorageBackend.destroyDBs(info);
         } catch (Exception e) {
             e.printStackTrace();
@@ -345,10 +327,6 @@ public class DatastoreResource {
             e.printStackTrace();
             new ResponseEntity<>("Could not destroy repository.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        //PubSubConnector.getInstance().reloadSubscriptions(info.getSlug(), false);
-        //if (externalConnectors)
-        //    PubSubConnector.getInstance().reloadSubscriptions(info.getSlug(), true);
 
         return ResponseEntity.ok("");
     }

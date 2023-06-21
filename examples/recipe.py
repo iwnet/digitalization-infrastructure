@@ -1,14 +1,14 @@
 import json
 
-def run(spark, input_message, antennas, messages_df):
+def run(spark, input_message, vessels, messages_df):
     message = input_message.collect()[0]
-    antenna_id = message['antenna_id']
-    temperature_str = message['payload']
+    vessel_id = message['vessel_id']
+    ais_str = message['payload']
 
     results_final_json = {
-        'results': temperature_str
+        'results': ais_str
     }
 
-    print('Result for antenna with id ' + antenna_id + ' is: ' + temperature_str)
+    print('Result for vessel with id ' + vessel_id + ' is: ' + ais_str)
 
     return results_final_json

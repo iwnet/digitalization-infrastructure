@@ -1,6 +1,12 @@
 {
-    "message_type": "temperature",
-    "slug": "iwnet",
-    "antenna_id": 1,
-    "payload": "some data"
+    "message_type":"ais_data",
+    "slug":"iwnet",
+    "xmmsi":"9000888",
+    "vessel_id": 0,
+    "payload":{
+        "type":0,
+        "speed_over_ground":8.3,
+        "latitude":52.3175066666667,
+        "longitude":8.78426
+    }
 }

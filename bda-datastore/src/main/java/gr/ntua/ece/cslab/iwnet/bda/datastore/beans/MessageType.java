@@ -45,20 +45,16 @@ public class MessageType implements Serializable {
     private String description;
     private boolean active;
     private String format;
-    private Integer externalConnectorId;
-    private String externalDatasource;
 
     private boolean exists = false;
 
     public MessageType() { }
 
-    public MessageType(String name, String description, boolean active, String format, Integer externalConnectorId, String externalDatasource) {
+    public MessageType(String name, String description, boolean active, String format) {
         this.name = name;
         this.description = description;
         this.active = active;
         this.format = format;
-        this.externalConnectorId = externalConnectorId;
-        this.externalDatasource = externalDatasource;
     }
 
     public Integer getId() {
@@ -95,14 +91,6 @@ public class MessageType implements Serializable {
         this.format = format;
     }
 
-    public Integer getExternalConnectorId() { return externalConnectorId; }
-
-    public void setExternalConnectorId(Integer externalConnectorId) { this.externalConnectorId = externalConnectorId; }
-
-    public String getExternalDatasource() { return externalDatasource; }
-
-    public void setExternalDatasource(String external_datasource) { this.externalDatasource = external_datasource; }
-
     public List<String> getMessageColumns() {
         List<String> columns = new ArrayList<>();
         columns.addAll(new JsonParser().parse(this.format).getAsJsonObject().keySet());
@@ -114,74 +102,60 @@ public class MessageType implements Serializable {
         return "MessageType{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", active=" + active +
-                ", format='" + format + '\'' +
-                ", external_connector_id='" + externalConnectorId + '\'' +
-                ", external_datasource='" + externalDatasource + '\'' +
+                ", active=" + active + '\'' +
+                ", format='" + format +
                 '}';
     }
 
     private final static String CREATE_MESSAGE_TYPES_TABLE_QUERY =
-        "CREATE TABLE metadata.message_type ( " +
-        "id                    SERIAL PRIMARY KEY, " +
-        "name                  VARCHAR(64) NOT NULL UNIQUE, " +
-        "description           VARCHAR(256), " +
-        "active                BOOLEAN DEFAULT(true), " +
-        "format                VARCHAR, " +
-        "external_connector_id INTEGER, " +
-        "external_datasource   VARCHAR(256)" +
-        ");";
+            "CREATE TABLE metadata.message_type ( " +
+                    "id                    SERIAL PRIMARY KEY, " +
+                    "name                  VARCHAR(64) NOT NULL UNIQUE, " +
+                    "description           VARCHAR(256), " +
+                    "active                BOOLEAN DEFAULT(true), " +
+                    "format                VARCHAR" +
+                    ");";
 
     private final static String MESSAGE_TYPES_QUERY =
-        "SELECT id, name, description, active, format, external_connector_id, external_datasource " +
-        "FROM metadata.message_type;";
+            "SELECT id, name, description, active, format " +
+                    "FROM metadata.message_type;";
 
     private final static String ACTIVE_MESSAGE_TYPES_QUERY =
-         "SELECT id, name, description, active, format, external_connector_id, external_datasource " +
-         "FROM metadata.message_type " +
-         "WHERE active = true and external_connector_id is null;";
-
-    private final static String ACTIVE_EXTERNAL_MESSAGE_TYPES_QUERY =
-         "SELECT id, name, description, active, format, external_connector_id, external_datasource " +
-         "FROM metadata.message_type " +
-         "WHERE active = true and external_connector_id is not null;";
-
-    private final static String EXIST_ACTIVE_EXTERNAL_MESSAGE_TYPES_QUERY =
-         "SELECT count(*) as num " +
-         "FROM metadata.message_type " +
-         "WHERE active = true and external_connector_id is not null;";
+            "SELECT id, name, description, active, format " +
+                    "FROM metadata.message_type " +
+                    "WHERE active = true;";
 
     private final static String ACTIVE_MESSAGE_NAMES_QUERY =
-        "SELECT name " +
-        "FROM metadata.message_type " +
-        "WHERE active = true;";
+            "SELECT name " +
+                    "FROM metadata.message_type " +
+                    "WHERE active = true;";
 
     private final static String GET_MESSAGE_BY_NAME_QUERY =
-        "SELECT id, name, description, active, format, external_connector_id, external_datasource " +
-        "FROM metadata.message_type " +
-        "WHERE name = ?;";
+            "SELECT id, name, description, active, format " +
+                    "FROM metadata.message_type " +
+                    "WHERE name = ?;";
 
     private final static String GET_MESSAGE_BY_ID_QUERY =
-        "SELECT * " +
-        "FROM metadata.message_type " +
-        "WHERE id = ?;";
+            "SELECT * " +
+                    "FROM metadata.message_type " +
+                    "WHERE id = ?;";
 
     private final static String INSERT_MESSAGE_QUERY =
-        "INSERT INTO metadata.message_type (name,description,active,format,external_connector_id,external_datasource) " +
-        "VALUES (?, ?, ?, ?, ?, ?) " +
-        "RETURNING id;";
+            "INSERT INTO metadata.message_type (name,description,active,format) " +
+                    "VALUES (?, ?, ?, ?, ?, ?) " +
+                    "RETURNING id;";
 
     private final static String UPDATE_MESSAGE_QUERY =
-        "UPDATE metadata.message_type " +
-        "SET name = ?, description = ?, active = ?, format = ?, external_connector_id = ?, external_datasource = ? " +
-        "WHERE id = ?";
+            "UPDATE metadata.message_type " +
+                    "SET name = ?, description = ?, active = ?, format = ? " +
+                    "WHERE id = ?";
 
     private final static String DELETE_MESSAGE_QUERY =
-        "DELETE FROM metadata.message_type WHERE id = ?;";
+            "DELETE FROM metadata.message_type WHERE id = ?;";
 
     public static List<MessageType> getMessageTypes(String slug) throws SQLException, SystemConnectorException {
-        PostgresqlConnector connector = (PostgresqlConnector ) 
-            SystemConnector.getInstance().getDTconnector(slug);
+        PostgresqlConnector connector = (PostgresqlConnector )
+                SystemConnector.getInstance().getDTconnector(slug);
 
         Connection connection = connector.getConnection();
 
@@ -193,12 +167,10 @@ public class MessageType implements Serializable {
 
             while (resultSet.next()) {
                 MessageType messageType = new MessageType(
-                    resultSet.getString("name"),
-                    resultSet.getString("description"),
-                    resultSet.getBoolean("active"),
-                    resultSet.getString("format"),
-                    resultSet.getInt("external_connector_id"),
-                    resultSet.getString("external_datasource")
+                        resultSet.getString("name"),
+                        resultSet.getString("description"),
+                        resultSet.getBoolean("active"),
+                        resultSet.getString("format")
                 );
                 messageType.exists = true;
                 messageType.id = resultSet.getInt("id");
@@ -211,9 +183,9 @@ public class MessageType implements Serializable {
         }
 
         return messageTypes;
-     }
+    }
 
-    public static List<MessageType> getActiveMessageTypes(String slug, boolean external) throws SQLException, SystemConnectorException {
+    public static List<MessageType> getActiveMessageTypes(String slug) throws SQLException, SystemConnectorException {
         PostgresqlConnector connector = (PostgresqlConnector )
                 SystemConnector.getInstance().getDTconnector(slug);
 
@@ -224,17 +196,13 @@ public class MessageType implements Serializable {
         try {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(ACTIVE_MESSAGE_TYPES_QUERY);
-            if (external)
-                resultSet = statement.executeQuery(ACTIVE_EXTERNAL_MESSAGE_TYPES_QUERY);
 
             while (resultSet.next()) {
                 MessageType messageType = new MessageType(
                         resultSet.getString("name"),
                         resultSet.getString("description"),
                         resultSet.getBoolean("active"),
-                        resultSet.getString("format"),
-                        resultSet.getInt("external_connector_id"),
-                        resultSet.getString("external_datasource")
+                        resultSet.getString("format")
                 );
                 messageType.exists = true;
                 messageType.id = resultSet.getInt("id");
@@ -269,26 +237,6 @@ public class MessageType implements Serializable {
         return messageTypeNames;
     }
 
-    public static Boolean checkExternalMessageTypesExist(String slug) throws SQLException, SystemConnectorException {
-        PostgresqlConnector connector = (PostgresqlConnector) SystemConnector.getInstance().getDTconnector(slug);
-        Connection connection = connector.getConnection();
-
-        try {
-            PreparedStatement statement = connection.prepareStatement(EXIST_ACTIVE_EXTERNAL_MESSAGE_TYPES_QUERY);
-
-            ResultSet resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                Integer count = resultSet.getInt("num");
-                return (count > 0);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        throw new SQLException("Malformed query to find messages with external connectors.");
-    }
-
     public static MessageType getMessageByName(String slug, String name) throws SQLException, SystemConnectorException {
         PostgresqlConnector connector = (PostgresqlConnector) SystemConnector.getInstance().getDTconnector(slug);
         Connection connection = connector.getConnection();
@@ -304,9 +252,7 @@ public class MessageType implements Serializable {
                         resultSet.getString("name"),
                         resultSet.getString("description"),
                         resultSet.getBoolean("active"),
-                        resultSet.getString("format"),
-                        resultSet.getInt("external_connector_id"),
-                        resultSet.getString("external_datasource")
+                        resultSet.getString("format")
                 );
                 msg.exists = true;
                 msg.id = resultSet.getInt("id");
@@ -335,9 +281,7 @@ public class MessageType implements Serializable {
                         resultSet.getString("name"),
                         resultSet.getString("description"),
                         resultSet.getBoolean("active"),
-                        resultSet.getString("format"),
-                        resultSet.getInt("external_connector_id"),
-                        resultSet.getString("external_datasource")
+                        resultSet.getString("format")
                 );
                 msg.exists = true;
                 msg.id = resultSet.getInt("id");
@@ -364,11 +308,6 @@ public class MessageType implements Serializable {
             statement.setString(2, this.description);
             statement.setBoolean(3, this.active);
             statement.setString(4, this.format);
-            if (this.externalConnectorId != null)
-                statement.setInt(5, this.externalConnectorId);
-            else
-                statement.setNull(5, Types.INTEGER);
-            statement.setString(6, this.externalDatasource);
 
             try {
                 ResultSet resultSet = statement.executeQuery();
@@ -395,12 +334,8 @@ public class MessageType implements Serializable {
             statement.setString(2, this.description);
             statement.setBoolean(3, this.active);
             statement.setString(4, this.format);
-            if (this.externalConnectorId != null)
-                statement.setInt(5, this.externalConnectorId);
-            else
-                statement.setNull(5, Types.INTEGER);
-            statement.setString(6, this.externalDatasource);
-            statement.setInt(7, Integer.valueOf(this.id));
+
+            statement.setInt(5, Integer.valueOf(this.id));
 
             try {
                 statement.executeUpdate();
@@ -454,3 +389,4 @@ public class MessageType implements Serializable {
         LOGGER.log(Level.INFO, "SUCCESS: Create message_type table in metadata schema.");
     }
 }
+

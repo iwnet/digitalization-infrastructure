@@ -1,9 +1,7 @@
 {
-	"name":"temperature",
-	"description":"Temperature in the internal premises of a specific antenna",
+	"name":"ais_data",
+	"description":"Message containing ais data",
 	"active": true,
-	"format":"{'message_type': 'temperature', 'slug': 'slug', 'antenna_id': 'integer', 'payload': {'temperature': 'jsonb'}}",
-	"externalConnectorId": null,
-	"datasource": ""
+	"format":"{'message_type': 'ais_data', 'slug': 'iwnet', 'xmmsi': 'character varying', 'vessel_id': 'numeric', 'payload': ''}"
 }
 

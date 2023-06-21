@@ -5,8 +5,8 @@
   "executablePath" : "",
   "engineId" : 2,
   "args" : {
-    "dimension_tables": ["antennas"],
-    "message_types": ["temperature"],
+    "dimension_tables": ["vessels"],
+    "message_types": ["ais_data"],
     "other_args": []
   }
 }

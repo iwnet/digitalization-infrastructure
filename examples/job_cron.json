@@ -1,6 +1,6 @@
 {
-    "name":"temperature_forecast_job",
-    "description":"temperature_forecast_job",
+    "name":"water_level_forecast_job",
+    "description":"water_level_forecast_job",
     "messageTypeId": null,
     "recipeId": 1,
     "resultStorage": "kpidb",

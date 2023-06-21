@@ -52,10 +52,10 @@ curl -ik -X POST -H "Content-type:application/json" -H "Accept:application/json"
 
 // Get data from eventlog
 curl -ik -X GET -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/datastore/$SLUG/entries?type=rows&n=-1" && echo
-curl -ik -X GET -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/datastore/$SLUG/select?filters=antenna_id:1;message_type:temperature" && echo
+curl -ik -X GET -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/datastore/$SLUG/select?filters=vessel_id:1;message_type:ais_data" && echo
 
 // Get data from dimension tables
-curl -ik -X GET -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/datastore/$SLUG/dtable?tableName=antennas&filters=id:1" && echo
+curl -ik -X GET -H "Authorization: bearer $token" "$BDA_SERVER_PREFIX/datastore/$SLUG/dtable?tableName=vessels&filters=id:1" && echo
 
 // Print dimension tables schema
 curl -ik -X GET -H "Authorization: bearer $token" $BDA_SERVER_PREFIX/datastore/$SLUG/schema && echo

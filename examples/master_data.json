@@ -1,47 +1,89 @@
 {
-		"tables":[
+	"tables":[
+		{
+			"name": "vessels",
+			"schema":
+			{
+				"columnNames":["id","type","nominal_capacity"],
+				"columnTypes":[
+					{
+						"key":"id",
+						"value":"integer NOT NULL"
+					},{
+						"key":"type",
+						"value":"character varying(30)"
+					},{
+						"key":"nominal_capacity",
+						"value":"integer"
+					}],
+				"primaryKey":"id"
+			},
+			"data": [
 				{
-				"name": "antennas",
-				"schema":{
-						"columnNames":["id","name","location"],
-						"columnTypes":[
-								{
-								"key":"id",
-								"value":"integer"
-						},{
-								"key":"name",
-								"value":"text"
-						},{
-								"key":"location",
-								"value":"text"
-						}],
-						"primaryKey":"id"
-				},
-				"data":[
+					"tuple": [
 						{
-						"tuple":[
-								{
-								"key":"id",
-								"value":"1"
-						},{
-								"key":"name",
-								"value":"AG.265"
-						},{
-								"key":"location",
-								"value":"athens"
-						}]
-				},{
-						"tuple":[
-								{
-								"key":"id",
-								"value":"2"
-						},{
-								"key":"name",
-								"value":"AG.108"
-						},{
-								"key":"location",
-								"value":"thessaloniki"
-						}]
-				}]
-		}]
+							"key": "id",
+							"value": "0"
+						},
+						{
+							"key": "type",
+							"value": "Small"
+						},
+						{
+							"key": "nominal_capacity",
+							"value": "300"
+						}
+					]
+				},
+				{
+					"tuple": [
+						{
+							"key": "id",
+							"value": "1"
+						},
+						{
+							"key": "type",
+							"value": "Large"
+						},
+						{
+							"key": "nominal_capacity",
+							"value": "600"
+						}
+					]
+				},
+				{
+					"tuple": [
+						{
+							"key": "id",
+							"value": "2"
+						},
+						{
+							"key": "type",
+							"value": "Medium"
+						},
+						{
+							"key": "nominal_capacity",
+							"value": "450"
+						}
+					]
+				},
+				{
+					"tuple": [
+						{
+							"key": "id",
+							"value": "3"
+						},
+						{
+							"key": "type",
+							"value": "Small"
+						},
+						{
+							"key": "nominal_capacity",
+							"value": "300"
+						}
+					]
+				}
+			]
+		}
+	]
 }

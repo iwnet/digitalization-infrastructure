@@ -142,7 +142,7 @@ public class MessageType implements Serializable {
 
     private final static String INSERT_MESSAGE_QUERY =
             "INSERT INTO metadata.message_type (name,description,active,format) " +
-                    "VALUES (?, ?, ?, ?, ?, ?) " +
+                    "VALUES (?, ?, ?, ?) " +
                     "RETURNING id;";
 
     private final static String UPDATE_MESSAGE_QUERY =

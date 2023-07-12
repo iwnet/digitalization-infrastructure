@@ -59,7 +59,7 @@ public class DbInfo implements Serializable {
 
     private final static String INSERT_DBINFO_QUERY =
         "INSERT INTO db_info (slug, name, description, dbname) " +
-        "VALUES (?, ?, ?, ?, ?) " +
+        "VALUES (?, ?, ?, ?) " +
         "RETURNING id;";
 
     private final static String DELETE_DBINFO_QUERY =

@@ -39,27 +39,26 @@ public class DbInfo implements Serializable {
     private String name;
     private String description;
     private String dbname;
-    private Integer connectorId;
     private transient String dtDbname;
     private transient String elDbname;
     private transient String kpiDbname;
 
     private final static String GET_DBINFO_QUERY =
-            "SELECT id, slug, name, description, dbname, connector_id " +
+            "SELECT id, slug, name, description, dbname " +
                     "FROM db_info;";
 
     private final static String GET_DBINFO_BY_ID_QUERY =
-        "SELECT id, slug, name, description, dbname, connector_id " +
+        "SELECT id, slug, name, description, dbname " +
         "FROM db_info " +
         "WHERE id = ?;";
 
     private final static String GET_DBINFO_BY_SLUG_QUERY =
-        "SELECT id, slug, name, description, dbname, connector_id " +
+        "SELECT id, slug, name, description, dbname " +
         "FROM db_info " +
         "WHERE slug = ?;";
 
     private final static String INSERT_DBINFO_QUERY =
-        "INSERT INTO db_info (slug, name, description, dbname, connector_id) " +
+        "INSERT INTO db_info (slug, name, description, dbname) " +
         "VALUES (?, ?, ?, ?, ?) " +
         "RETURNING id;";
 
@@ -70,12 +69,11 @@ public class DbInfo implements Serializable {
 
     public DbInfo() { }
 
-    public DbInfo(String slug, String name, String description, String dbname, Integer connectorId) {
+    public DbInfo(String slug, String name, String description, String dbname) {
         this.slug = slug;
         this.name = name;
         this.description = description;
         this.dbname = dbname;
-        this.connectorId = connectorId;
         this.dtDbname = dbname + "_dt";
         this.elDbname = dbname + "_el";
         this.kpiDbname = dbname + "_kpi";
@@ -113,10 +111,6 @@ public class DbInfo implements Serializable {
         this.description = description;
     }
 
-    public Integer getConnectorId() { return connectorId; }
-
-    public void setConnectorId(Integer connectorId) { this.connectorId = connectorId; }
-
     public void setDbname(String dbname) {
         this.dbname = dbname;
     }
@@ -139,8 +133,7 @@ public class DbInfo implements Serializable {
                 "slug='" + slug + "', " +
                 "name='" + name + "', " +
                 "description='" + description + "', " +
-                "dbname='" + dbname + "', " +
-                "connectorId='" + connectorId + "' " +
+                "dbname='" + dbname + "' " +
                 "}";
     }
 
@@ -157,7 +150,6 @@ public class DbInfo implements Serializable {
                 statement.setString(2, this.name);
                 statement.setString(3, this.description);
                 statement.setString(4, this.dbname);
-                statement.setInt(5, this.connectorId);
 
                 ResultSet resultSet = statement.executeQuery();
 
@@ -215,8 +207,7 @@ public class DbInfo implements Serializable {
                     resultSet.getString("slug"),
                     resultSet.getString("name"),
                     resultSet.getString("description"),
-                    resultSet.getString("dbname"),
-                    resultSet.getInt("connector_id")
+                    resultSet.getString("dbname")
                 );
 
                 info.id = resultSet.getInt("id");
@@ -246,8 +237,7 @@ public class DbInfo implements Serializable {
                     resultSet.getString("slug"),
                     resultSet.getString("name"),
                     resultSet.getString("description"),
-                    resultSet.getString("dbname"),
-                    resultSet.getInt("connector_id")
+                    resultSet.getString("dbname")
                 );
 
                 info.id = resultSet.getInt("id");
@@ -276,8 +266,7 @@ public class DbInfo implements Serializable {
                         resultSet.getString("slug"),
                         resultSet.getString("name"),
                         resultSet.getString("description"),
-                        resultSet.getString("dbname"),
-                        resultSet.getInt("connector_id")
+                        resultSet.getString("dbname")
                 );
 
                 info.id = resultSet.getInt("id");
@@ -292,4 +281,5 @@ public class DbInfo implements Serializable {
 
         throw new SQLException("Failed to retrieve Db info.");
     }
+
 }

@@ -40,7 +40,7 @@ import java.util.Map;
  * KPIResource holds the method for the analyticsml module.
  */
 @RestController
-@CrossOrigin(origins = {"https://iwnet.qubiteq.gr","http://localhost:3000"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000"}, allowCredentials = "true")
 @RequestMapping("kpi")
 public class KPIResource {
     @GetMapping()
